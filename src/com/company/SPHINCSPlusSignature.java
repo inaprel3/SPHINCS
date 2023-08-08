@@ -1,4 +1,3 @@
-// Importing necessary classes and packages from the Bouncy Castle library
 package com.company;
 
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
@@ -11,43 +10,44 @@ import org.bouncycastle.pqc.crypto.sphincs.*;
 
 import java.security.SecureRandom;
 
-public class SPHINCSPlusSignature {
+/* Пример использования алгоритма SPHINCS+ для электронной цифровой подписи. */
+public class SPHINCSPlusSignatureExample {
 
     public static void main(String[] args) throws CryptoException {
-        // Create an instance of the SHA-256 hashing algorithm
+        // Инициализация хеш-функции SHA-256
         Digest digest = new SHA256Digest();
 
-        // Create a secure random number generator for use in the algorithm
+        // Создание генератора случайных чисел
         SecureRandom random = new SecureRandom();
 
-        // Generate a seed for SPHINCS+ of length 32 bytes
-        byte[] seed = new byte[32]; // In this example, the seed is assumed to be 32 bytes long
+        // Генерация случайного сида длиной 32 байта
+        byte[] seed = new byte[32];
         random.nextBytes(seed);
 
-        // Generate the SPHINCS+ key pair
+        // Генерация ключевой пары для алгоритма SPHINCS+
         AsymmetricCipherKeyPair sphincsKeyPair = generateSPHINCSKeyPair(random, digest, seed);
 
-        // Generate the SPHINCS+с key pair (SPHINCS with SHA-256 compression)
+        // Генерация ключевой пары для алгоритма SPHINCS+с (сжатие с использованием SHA-256)
         AsymmetricCipherKeyPair sphincsCKeyPair = generateSPHINCS256cKeyPair(random, digest, seed);
 
-        // Your message that needs to be signed
+        // Ваше сообщение, которое требуется подписать
         byte[] message = "Hello, World!".getBytes();
 
-        // Hash the message
+        // Хеширование сообщения
         byte[] hashedMessage = hashMessage(digest, message);
 
-        // Sign the message using SPHINCS+
+        // Создание подписи с использованием алгоритма SPHINCS+
         byte[] signature = signMessage(digest, sphincsKeyPair, hashedMessage, random);
         boolean isValid = verifySignature(digest, sphincsKeyPair.getPublic(), hashedMessage, signature);
         System.out.println("SPHINCS+ Signature is valid: " + isValid);
 
-        // Sign the message using SPHINCS+с
+        // Создание подписи с использованием алгоритма SPHINCS+с
         byte[] cSignature = signMessage(digest, sphincsCKeyPair, hashedMessage, random);
         boolean isCValid = verifySignature(digest, sphincsCKeyPair.getPublic(), hashedMessage, cSignature);
         System.out.println("SPHINCS+с Signature is valid: " + isCValid);
     }
 
-    // Function to generate the SPHINCS+ key pair
+    /* Генерация ключевой пары для алгоритма SPHINCS+. */
     private static AsymmetricCipherKeyPair generateSPHINCSKeyPair(SecureRandom random, Digest digest, byte[] seed) {
         SPHINCS256KeyPairGenerator keyPairGenerator = new SPHINCS256KeyPairGenerator();
         SPHINCS256KeyGenerationParameters keyGenParams = new MySPHINCS256KeyGenerationParameters(random, digest, seed);
@@ -55,7 +55,7 @@ public class SPHINCSPlusSignature {
         return keyPairGenerator.generateKeyPair();
     }
 
-    // Function to generate the SPHINCS+с key pair (SPHINCS with SHA-256 compression)
+    /* Генерация ключевой пары для алгоритма SPHINCS+с (сжатие с использованием SHA-256). */
     private static AsymmetricCipherKeyPair generateSPHINCS256cKeyPair(SecureRandom random, Digest digest, byte[] seed) {
         SPHINCS256KeyPairGenerator keyPairGenerator = new SPHINCS256KeyPairGenerator();
         SPHINCS256KeyGenerationParameters keyGenParams = new MySPHINCS256cKeyGenerationParameters(random, digest, seed);
@@ -63,7 +63,7 @@ public class SPHINCSPlusSignature {
         return keyPairGenerator.generateKeyPair();
     }
 
-    // Function to hash the message using the given digest algorithm
+    /* Хеширование сообщения с использованием заданной хеш-функции. */
     private static byte[] hashMessage(Digest digest, byte[] message) {
         byte[] hash = new byte[digest.getDigestSize()];
         digest.update(message, 0, message.length);
@@ -71,7 +71,7 @@ public class SPHINCSPlusSignature {
         return hash;
     }
 
-    // Function to sign the message using SPHINCS+
+    /* Создание подписи для сообщения с использованием алгоритма SPHINCS+. */
     private static byte[] signMessage(Digest digest, AsymmetricCipherKeyPair keyPair, byte[] hashedMessage, SecureRandom random) throws CryptoException {
         SPHINCS256Signer signer = new SPHINCS256Signer(digest, digest);
         AsymmetricKeyParameter privateKey = keyPair.getPrivate();
@@ -81,7 +81,7 @@ public class SPHINCSPlusSignature {
         return signature;
     }
 
-    // Function to verify the signature of the message using SPHINCS+
+    /* Проверка подписи для сообщения с использованием алгоритма SPHINCS+. */
     private static boolean verifySignature(Digest digest, AsymmetricKeyParameter publicKey, byte[] hashedMessage, byte[] signature) {
         SPHINCS256Signer signer = new SPHINCS256Signer(digest, digest);
         signer.init(false, publicKey);
